@@ -3,7 +3,7 @@
 #  Mac save
 ._*
 *.pdf
-folder_to_keep/*
-!folder_to_keep/.gitkeep
+!Loudspeaker-Design-Tool-with-Teensy-4-Code-Greneration/
+Loudspeaker-Design-Tool-with-Teensy-4-Code-Greneration/*
 *.txt
 !script_template.txt
