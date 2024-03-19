@@ -1,0 +1,880 @@
+// Functions and definitions for model DSP have been kept in one script to facilitate copy and paste functionality of corresponding Simulink function rather than having seperate .cpp and .h files.
+
+//Script generated: nan;
+//Script name: nan;
+
+#include <string.h>
+#include <cstdint>
+#include <Audio.h>
+#include <Wire.h>
+#include <SPI.h>
+#include <SD.h>
+#include <cmath>
+#include <vector>
+#include <string>
+#include <SerialFlash.h>
+#include <Adafruit_ILI9341.h>  
+#define TFT_CS   37   // CS pin for the TFT display
+#define TFT_DC   32//Data/command pin for the TFT display
+
+Adafruit_ILI9341 tft = Adafruit_ILI9341(TFT_CS, TFT_DC);
+
+
+
+
+class  LoudspeakerModelDSP : public AudioStream
+{
+  public:
+    LoudspeakerModelDSP(void) : AudioStream(2, inputQueueArray) {  }
+    virtual void update(void);
+    void ziFilter(float*, float*, float*, float*, float*, int);//Filter function
+    void vectorCopy(float*, float*, boolean); // copies 1D array
+    float maxAmplitude(float*);
+
+    // Scaling factor for 16 bit audio.
+    const float normaliseIn = 0.5 / (pow(2, 16) - 1);
+    const float normaliseOut = pow(2, 16) - 1;
+    const float nan = NAN;
+    static int CrossOverLength; 
+    static float maxAmplitudeT; 
+    static float maxAmplitudeW; 
+    static float gainT;
+    static float gainW; 
+
+    
+  private:
+    audio_block_t *inputQueueArray[2];
+
+    static float zi_P[6][2];
+
+    static float zi_lo[2][4]; //Shi..
+    static float zi_hi[2][4];
+
+    static float zi_low_all[2];
+    static float zi_high_all[2];
+	
+    
+    
+    static  int tSamples;
+    static int wSamples;
+
+    
+    static std::vector<float> frontPadT;
+    static std::vector<float> delayBufferT;
+  
+    static std::vector<float> frontPadW;
+    static std::vector<float> delayBufferW;
+
+    
+
+};
+
+int LoudspeakerModelDSP::CrossOverLength;
+
+float LoudspeakerModelDSP::maxAmplitudeT;
+float LoudspeakerModelDSP::maxAmplitudeW;
+
+
+float  LoudspeakerModelDSP::zi_P[6][2] = {
+  {0.0f, 0.0f},
+  {0.0f, 0.0f},
+  {0.0f, 0.0f},
+  {0.0f, 0.0f},
+  {0.0f, 0.0f},
+  {0.0f, 0.0f}
+};
+float  LoudspeakerModelDSP::zi_lo[2][4] =  {
+  {0.0f, 0.0f,0.0f, 0.0f},///???????
+  {0.0f, 0.0f,0.0f, 0.0f},
+};
+
+float  LoudspeakerModelDSP::zi_hi[2][4] = {
+  {0.0f, 0.0f,0.0f, 0.0f},///???????
+  {0.0f, 0.0f,0.0f, 0.0f},
+};
+
+float  LoudspeakerModelDSP::zi_low_all[2] = {
+  0.0f, 0.0f
+  }; 
+
+float  LoudspeakerModelDSP::zi_high_all[2] = {
+  0.0f, 0.0f
+  }; 
+   
+int LoudspeakerModelDSP::tSamples = nan;
+std::vector<float> LoudspeakerModelDSP::frontPadT(tSamples);
+std::vector<float> LoudspeakerModelDSP::delayBufferT(128 - tSamples);
+
+int LoudspeakerModelDSP::wSamples = nan;
+std::vector<float> LoudspeakerModelDSP::frontPadW(wSamples);
+std::vector<float> LoudspeakerModelDSP::delayBufferW(128 - wSamples);
+
+
+float LoudspeakerModelDSP::gainT = nan;//nans!!!!!!!!!!!!!!!!!
+float LoudspeakerModelDSP::gainW = nan;//nans!!!!!!!!!
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////7
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+// FILTER FUNCTION //
+void LoudspeakerModelDSP::ziFilter(float* x, float* y, float* zi, float *B, float *A, int B_length){
+
+    float a0 = A[0];
+    float a1 = A[1];
+    
+    float b0 = B[0];
+    float b1 = B[1];
+    
+    if (B_length == 3){
+    float a2 = A[2];
+    float b2 = B[2];
+    
+    
+  int i;
+
+       for (i = 0; i < AUDIO_BLOCK_SAMPLES; i++){
+        
+        y[i] = (b0 / a0) * x[i] + zi[0]; //output
+        zi[0] = (b1 / a0) * x[i] + zi[1] - (a1 / a0) * y[i]; //state 1
+        zi[1] = (b2 / a0) * x[i]  - (a2 / a0) * y[i]; //state 2
+
+      }
+  }
+  else if (B_length == 5){
+    
+    float a2 = A[2];
+    float b2 = B[2];
+    float a3 = A[3];
+    float b3 = B[3];    
+    float a4 = A[4];
+    float b4 = B[4];
+    
+    
+  int i;
+
+       for (i = 0; i < AUDIO_BLOCK_SAMPLES; i++){
+        
+        y[i] = (b0 / a0) * x[i] + zi[0]; //output
+        zi[0] = (b1 / a0) * x[i] + zi[1] - (a1 / a0) * y[i]; //state 1
+        zi[1] = (b2 / a0) * x[i]  + zi[2] - (a2 / a0) * y[i]; //state 2
+        zi[2] = (b3 / a0) * x[i] + zi[3] - (a3 / a0) * y[i]; //state 1
+        zi[3] = (b4 / a0) * x[i]  - (a4 / a0) * y[i]; //state 2
+      }
+  }
+
+
+
+
+  
+  else{
+
+     int i;
+
+       for (i = 0; i < AUDIO_BLOCK_SAMPLES; i++){
+        
+        y[i] = (b0 / a0) * x[i] + zi[0]; //output
+        zi[0] = (b1 / a0) * x[i] + zi[1] - (a1 / a0) * y[i]; //state 1
+        
+
+      }
+    
+    
+    }
+  
+  }
+//////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////
+
+// VECTOR COPY FUNCTION //
+
+void LoudspeakerModelDSP::vectorCopy(float* x, float* y, boolean phaseReverse){
+
+
+  int i;
+
+       for (i = 0; i < AUDIO_BLOCK_SAMPLES; i++){
+        if (phaseReverse==true){
+        x[i] = y[i]*-1; // y = x
+        }
+        else{
+        x[i] = y[i];
+        }
+       
+      }
+  }
+
+float LoudspeakerModelDSP::maxAmplitude(float* x){
+  
+  float maxValue=0.0;
+  for (int i = 0; i < AUDIO_BLOCK_SAMPLES; i++){
+
+    if(x[i]<0){
+      
+      if (x[i]*-1>maxValue){
+        maxValue=x[i]*-1;
+        }
+      }
+    else{
+      
+      if (x[i]>maxValue){
+        
+        maxValue=x[i];
+        
+        }
+      
+      }
+    }
+   return maxValue; 
+  }
+
+//////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////
+
+// LOUDSPEAKER DSP UPDATE FUNCTION //
+void  LoudspeakerModelDSP::update(void) {
+
+
+  audio_block_t *blockLeft, *blockRight; //Create audio block objects
+  float inLeft, inRight;
+  int i, n;
+
+  float y[AUDIO_BLOCK_SAMPLES], x[AUDIO_BLOCK_SAMPLES];
+  float y_lo[AUDIO_BLOCK_SAMPLES], x_lo[AUDIO_BLOCK_SAMPLES];
+  float y_hi[AUDIO_BLOCK_SAMPLES], x_hi[AUDIO_BLOCK_SAMPLES];
+int B_Lo_Length = nan;
+
+float a0_1 = nan, a1_1 = nan, a2_1 = nan, b0_1 = nan, b1_1 = nan, b2_1 = nan;
+float a0_2 = nan, a1_2 = nan, a2_2 = nan, b0_2 = nan, b1_2 = nan, b2_2 = nan;
+float a0_3 = nan, a1_3 = nan, a2_3 = nan, b0_3 = nan, b1_3 = nan, b2_3 = nan;
+float a0_4 = nan, a1_4 = nan, a2_4 = nan, b0_4 = nan, b1_4 = nan, b2_4 = nan;
+float a0_5 = nan, a1_5 = nan, a2_5 = nan, b0_5 = nan, b1_5 = nan, b2_5 = nan;
+float a0_6 = nan, a1_6 = nan, a2_6 = nan, b0_6 = nan, b1_6 = nan, b2_6 = nan;
+
+
+
+float a0_Lo = nan, a1_Lo = nan , b0_Lo = nan  , b1_Lo = nan;
+float a0_Hi = nan, a1_Hi = nan , b0_Hi = nan , b1_Hi = nan;
+
+
+
+
+   //Assign coefficients to arrays
+  float P_A[][3] = {
+    {a0_1, a1_1, a2_1},
+    {a0_2, a1_2, a2_2},
+    {a0_3, a1_3, a2_3},
+    {a0_4, a1_4, a2_4},
+    {a0_5, a1_5, a2_5},
+    {a0_6, a1_6, a2_6}
+  };
+
+  float P_B[][3] = {
+    {b0_1, b1_1, b2_1},
+    {b0_2, b1_2, b2_2},
+    {b0_3, b1_3, b2_3},
+    {b0_4, b1_4, b2_4},
+    {b0_5, b1_5, b2_5},
+    {b0_6, b1_6, b2_6}
+  };
+  
+LoudspeakerModelDSP::CrossOverLength = B_Lo_Length ;//MAKE SURE TO PUT IN SCRIPT
+
+float Lo_A[5];
+float Lo_B[5];
+float Hi_A[5];
+float Hi_B[5];
+
+ if (B_Lo_Length ==3){
+    
+    float b2_Lo = nan, b2_Hi = nan;
+    float a2_Lo = nan, a2_Hi = nan;
+    
+    
+       Lo_A[0] = a0_Lo;
+    Lo_A[1] = a1_Lo;
+    Lo_A[2] = a2_Lo;
+
+    Lo_B[0] = b0_Lo;
+    Lo_B[1] = b1_Lo;
+    Lo_B[2] = b2_Lo;
+
+    Hi_A[0] = a0_Hi;
+    Hi_A[1] = a1_Hi;
+    Hi_A[2] = a2_Hi;
+
+    Hi_B[0] = b0_Hi;
+    Hi_B[1] = b1_Hi;
+    Hi_B[2] = b2_Hi;
+  
+  }
+
+     else if (B_Lo_Length ==5){
+    
+    float b2_Lo = nan, b2_Hi = nan;
+    float a2_Lo = nan, a2_Hi = nan;
+    float b3_Lo = nan, b3_Hi = nan;
+    float a3_Lo = nan, a3_Hi = nan;
+    float b4_Lo = nan, b4_Hi = nan;
+    float a4_Lo = nan, a4_Hi = nan;
+    
+    
+    Lo_A[0] = a0_Lo;
+    Lo_A[1] = a1_Lo;
+    Lo_A[2] = a2_Lo;
+    Lo_A[3] = a3_Lo;
+    Lo_A[4] = a4_Lo;
+   
+
+    Lo_B[0] = b0_Lo;
+    Lo_B[1] = b1_Lo;
+    Lo_B[2] = b2_Lo;
+    Lo_B[3] = b3_Lo;
+    Lo_B[4] = b4_Lo;
+
+    Hi_A[0] = a0_Hi;
+    Hi_A[1] = a1_Hi;
+    Hi_A[2] = a2_Hi;
+    Hi_A[3] = a3_Hi;
+    Hi_A[4] = a4_Hi;
+
+    Hi_B[0] = b0_Hi;
+    Hi_B[1] = b1_Hi;
+    Hi_B[2] = b2_Hi;
+    Hi_B[3] = b3_Hi;
+    Hi_B[4] = b4_Hi;
+  
+  }
+
+  else{
+
+    Lo_A[0] = a0_Lo;
+    Lo_A[1] = a1_Lo;
+    
+
+    Lo_B[0] = b0_Lo;
+    Lo_B[1] = b1_Lo;
+ 
+
+    Hi_A[0] = a0_Hi;
+    Hi_A[1] = a1_Hi;
+
+
+    Hi_B[0] = b0_Hi;
+    Hi_B[1] = b1_Hi;  
+    
+    }
+  
+
+   //GET AND CHECK AUDIO BLOCKS//
+  
+  blockLeft = receiveWritable(0); 
+  blockRight = receiveWritable(1);
+
+  if (!blockRight || !blockLeft) {
+    return;
+  }
+
+
+//Reading stereo input and normalising
+  for (i = 0; i < AUDIO_BLOCK_SAMPLES; i++) {
+
+    inLeft = blockLeft->data[i] * normaliseIn; 
+    inRight = blockRight->data[i] * normaliseIn;
+    x[i] = (inLeft + inRight)/2; //creating mono vector for processing
+    //x[i] = inLeft;
+    
+
+  }
+
+
+//Low pass everthing at 20KHz
+
+  float B_LowPassAll[3] = {0.813243918762578066328217119008, 1.626487837525156132656434238015, 0.813243918762578066328217119008};
+  float A_LowPassAll[3] = {1, 1.591300465864908364466145940241, 0.661675209185403678802117610758};
+
+  ziFilter(x, y, zi_low_all, B_LowPassAll, A_LowPassAll,3);
+  vectorCopy(x, y,false);// Copies y to x, 
+
+
+
+//High pass everthing at 20KHz
+  float B_highPassAll[3] = {0.997987115675118996449555197614, -1.995974231350237992899110395228, 0.997987115675118996449555197614};
+  float A_highPassAll[3] = {1, -1.995970179642828412625021883287, 0.995978283057647240106291519623};
+
+  ziFilter(x, y, zi_high_all, B_highPassAll, A_highPassAll,3);
+  vectorCopy(x, y,false);// Copies y to x,  
+
+
+
+
+  //PARAMETRIC EQ//
+ 
+  for (n = 0; n < 6; n++)
+  {
+    
+    ziFilter(x, y, zi_P[n], P_B[n], P_A[n],3);
+    
+    // If parametric EQ still looping assign y array to x for next loop else assign y array to a_lo and x_hi for crossover filtering.
+       if (n >= 0 && n <= 4) {
+           vectorCopy(x, y,false);// Copies y to x, 
+          }
+        else {
+            vectorCopy(x_lo, y,false);
+            vectorCopy(x_hi, y,false);
+         
+      }
+    }
+
+  
+
+//  ////CROSSOVER///////
+     //Loop for low shelf cross over
+
+float gainTdB=pow(10, gainT / 20);
+float gainWdB=pow(10, gainW / 20);
+
+
+
+ if (gainT!=0){
+      	for (i = 0; i < AUDIO_BLOCK_SAMPLES; i++) {
+       	 x_hi[i] = x_hi[i] * gainTdB;
+      } 
+  }
+  
+  if (gainW!=0){
+
+      	for (i = 0; i < AUDIO_BLOCK_SAMPLES; i++) {
+
+        x_lo[i] = x_lo[i] * gainWdB;
+        
+      }
+  }
+    if (B_Lo_Length==2){
+      
+      vectorCopy(y_lo, x_lo,true); //inverse low signal if 2nd order linkwitz riley being used
+      vectorCopy(x_lo, y_lo, false); //copy inverted signal back
+      
+      }
+      
+      for (n = 0; n < 2; n++){
+  
+      ziFilter(x_lo, y_lo, zi_lo[n], Lo_B, Lo_A, B_Lo_Length);
+      ziFilter(x_hi, y_hi, zi_hi[n], Hi_B, Hi_A, B_Lo_Length);
+      
+           // Assign y to x for second loop
+           if (n==0){  
+                vectorCopy(x_lo, y_lo,false);
+                vectorCopy(x_hi, y_hi,false);
+    
+            }
+    
+    
+    }
+  
+
+
+ 
+
+
+  
+// ////TWEETER DELAY////
+if (tSamples>0){
+float x_hi_temp[128];
+
+// Check if delayBufferT is empty (initial fill)
+if (delayBufferT.empty()) {
+  // Fill zeroPad with zeros
+  for (n = 0; n < tSamples; n++) {
+    frontPadT[n] = 0;
+  }
+
+  // Fill delayBufferT with the end values from x_hi
+  for (n = 0; n < tSamples; n++) {
+    delayBufferT[n] = x_hi[128 - tSamples + n];
+  }
+} else {
+  // Update frontPad with the values from delayBuffer and update delayBuffer
+  for (n = 0; n < tSamples; n++) {
+    frontPadT[n] = delayBufferT[n];
+    delayBufferT[n] = x_hi[128 - tSamples + n];
+  }
+}
+
+// Fill x_hi_temp with the appropriate values from zeroPad and x_hi
+for (n = 0; n < 128; n++) {
+  if (n < tSamples) {
+    x_hi_temp[n] = frontPadT[n];
+  } else {
+    x_hi_temp[n] = x_hi[n - tSamples];
+  }
+}
+// Copy x_lo_temp back to x_lo
+vectorCopy(x_hi, x_hi_temp,false);
+}
+// ////WOOFER DELAY////
+
+if (wSamples>0){
+float x_lo_temp[128];
+
+// Check if delayBufferW is empty (initial fill)
+
+if (delayBufferW.empty()) {
+  // Fill frontPadW with zeros
+  for (n = 0; n < wSamples; n++) {
+    frontPadW[n] = 0;
+  }
+
+  // Fill delayBufferW with the end  values from x_lo
+  for (n = 0; n < wSamples; n++) {
+    delayBufferW[n] = x_lo[128 - wSamples + n];
+  }
+} else {
+  // Update frontPadW with the values from delayBufferW and update delayBufferW
+  for (n = 0; n < wSamples; n++) {
+    frontPadW[n] = delayBufferW[n];
+    delayBufferW[n] = x_lo[128 - wSamples + n];
+  }
+}
+
+// Fill x_lo_temp with the appropriate values from frontPadW and x_lo
+for (n = 0; n < 128; n++) {
+  if (n < wSamples) {
+    x_lo_temp[n] = frontPadW[n];
+  } else {
+    x_lo_temp[n] = x_lo[n - wSamples];
+  }
+}
+
+// Copy x_lo_temp back to x_lo
+vectorCopy(x_lo, x_lo_temp,false);
+
+}
+      
+LoudspeakerModelDSP::maxAmplitudeT = maxAmplitude(x_hi);
+LoudspeakerModelDSP::maxAmplitudeW = maxAmplitude(x_lo);
+
+  
+  //Copy to blocks and transmit
+  
+  for (i = 0; i < AUDIO_BLOCK_SAMPLES; i++) {
+   
+    blockLeft->data[i] = y_lo[i] * normaliseOut; //Write output to Woofer block and un-normalise (Left is now Low and Right is High)
+    blockRight->data[i] = y_hi[i] * normaliseOut;//Write output to Tweeter block and un-normalise
+
+  }
+  
+  transmit(blockLeft, 0); //Transmit and release block data)
+  transmit(blockRight, 1);
+  release(blockLeft);
+  release(blockRight);
+
+
+  
+}
+
+
+
+// END OF UPDATE FUNCTION 
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+float rectFillFunction(char colour, float x, std::vector<float> levelMarks) {
+    float ret = 0.0;
+
+
+    if (x >= 0 && x <= levelMarks[0]) {
+
+        if (colour == 'g') {
+            ret = 0;
+        } else if (colour == 'b') {
+            ret = 98;
+        }
+
+    } else if (x > levelMarks[0] && x <=  levelMarks[1]) {
+        if (colour == 'g') {
+            ret = -10;
+        } else if (colour == 'b') {
+            ret = 90;
+        }
+
+    } else if (x >  levelMarks[1] && x <= levelMarks[2]) {
+        if (colour == 'g') {
+            ret = -20;
+        } else if (colour == 'b') {
+            ret = 80;
+        }
+
+    } else if (x >  levelMarks[2] && x <= levelMarks[3] ) {
+        if (colour == 'g') {
+            ret = -30;
+        } else if (colour == 'b') {
+            ret = 70;
+        }
+
+    } else if (x > levelMarks[3] && x <= levelMarks[4]) {
+        if (colour == 'g') {
+            ret = -40;
+        } else if (colour == 'b') {
+            ret = 60;
+        }
+
+    } else if (x > levelMarks[4] && x <=  levelMarks[5]) {
+        if (colour == 'g') {
+            ret = -50;
+        } else if (colour == 'b') {
+            ret = 50;
+        }
+    
+
+      } else if (x > levelMarks[5] && x <=  levelMarks[6]) {
+        if (colour == 'g') {
+            ret = -60;
+        } else if (colour == 'b') {
+            ret = 40;
+        }
+
+    } else if (x >  levelMarks[6] && x <= levelMarks[7]) {
+        if (colour == 'g') {
+            ret = -70;
+        } else if (colour == 'b') {
+            ret = 30;
+        }
+
+    } else if (x >  levelMarks[7] && x <= levelMarks[8] ) {
+        if (colour == 'g') {
+            ret = -80;
+        } else if (colour == 'b') {
+            ret = 20;
+        }
+
+    } else if (x > levelMarks[8] && x <= levelMarks[9]) {
+        if (colour == 'g') {
+            ret = -90;
+        } else if (colour == 'b') {
+            ret = 10;
+        }
+
+    } else if (x > levelMarks[9] && x <=  levelMarks[10]) {
+        if (colour == 'g') {
+            ret = -98;
+        } else if (colour == 'b') {
+            ret = 0;
+        }
+    }
+    
+    return ret;
+}
+
+
+AudioInputI2S i2s1;
+AudioInputUSB USB1;
+AudioOutputI2S i2s2;
+
+LoudspeakerModelDSP LS_1;
+
+
+//AudioConnection patchCord1(i2s1, 0, LS_1, 0); //comment in for line in audio
+//AudioConnection patchCord2(i2s1, 1, LS_1, 1);
+AudioConnection patchCord1(USB1, 0, LS_1, 0); // comment in for USB audio 
+AudioConnection patchCord2(USB1, 1, LS_1, 1);
+AudioConnection patchCord3(LS_1, 0, i2s2, 0);
+AudioConnection patchCord4(LS_1, 1, i2s2, 1);
+
+AudioControlSGTL5000 sgtl5000_1;
+
+const int myInput = AUDIO_INPUT_LINEIN;
+std::string fileName = nan; //DONT FORGET IN COPY
+float crossOverHz = nan;
+String crossOverPrintable = String(crossOverHz) + " Hz";
+float offSetW = nan;
+float offSetT = nan;
+String offSetPrintableW = String(offSetW) + "m";
+String offSetPrintableT = String(offSetT) + "m";
+String gainPrintableW = String(LS_1.gainW) + "dB";
+String gainPrintableT = String(LS_1.gainT) + "dB";
+
+int flag = 0;
+std::vector<float> levelMarks;
+
+
+void setup()
+{
+ 
+  AudioMemory(40);
+  Serial.begin(9600);
+  // Enable audio shield
+  sgtl5000_1.enable();
+  sgtl5000_1.inputSelect(myInput);
+
+  // Set volume level
+  
+  sgtl5000_1.volume(0.5);
+
+  // Initialize the display
+
+
+  tft.begin();
+  tft.setRotation(4);  // rotation 
+  tft.fillScreen(ILI9341_BLACK); // background color
+  tft.setTextColor(ILI9341_WHITE); //  text color to white
+  tft.setTextSize(2); //  text size
+  tft.setCursor(1, 1); // text cursor position
+  tft.println(("Loaded: " + fileName).c_str());
+;
+  
+ 
+  tft.println(" ");
+  if (LS_1.CrossOverLength == 3){
+  tft.println("Forth Order L&R @");
+  
+
+  }
+  else if (LS_1.CrossOverLength == 5){
+  tft.println("Eighth Order L&R @");
+  
+  }
+  else{
+  tft.println("Second Order L&R @ ");
+ 
+  
+  }  
+
+  tft.println(crossOverPrintable);
+
+  int n = 11; // Creating amplitude levels for rectangle rectFillFunction
+  
+  levelMarks = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+  
+  float minLevel= 0.01;
+  float maxLevel = 0.16;
+    for (int i = 0; i < n; ++i) {
+
+          levelMarks[i] = exp(log(minLevel) + i * (log(maxLevel) - log(minLevel)) / (n - 1));
+          
+        }
+
+
+}
+
+
+    float previousMaxW = 0.0;
+    float previousMaxT = 0.0;
+
+
+void loop()
+{
+ 
+
+
+ 
+
+
+   
+   tft.drawRect(10, 200, 50, 100, ILI9341_WHITE);//rectangles for driver amplitude meters
+   tft.drawRect(130, 200, 50, 100, ILI9341_WHITE);
+    
+   tft.setCursor(1, 78);  
+   tft.println("Woofer:");
+   tft.setCursor(1, 102);  
+   tft.println("Gain");
+   tft.setCursor(1,122);  
+   tft.println(gainPrintableW);
+   tft.setCursor(1, 144);  
+   tft.println("Offset");
+   tft.setCursor(1, 164);  
+   tft.println(offSetPrintableW);
+
+   
+
+   tft.setCursor(121, 78); // text cursor position
+   tft.println("Tweeter:");
+   tft.setCursor(121, 102);  
+   tft.println("Gain");
+   tft.setCursor(121,122);  
+   tft.println(gainPrintableT);
+   tft.setCursor(121, 144);
+   tft.println("Offset");
+
+   tft.setCursor(121, 164);
+   tft.println(offSetPrintableT);
+
+   
+
+    float x = LS_1.maxAmplitudeW;
+
+    if (x<previousMaxW){
+      tft.fillRect(11, 201, 48, rectFillFunction('b', previousMaxW,  levelMarks), ILI9341_BLACK);
+      tft.fillRect(11, 299, 48, rectFillFunction('g', previousMaxW,  levelMarks) , ILI9341_GREEN);  
+      
+      previousMaxW = previousMaxW-(previousMaxW*0.1);
+     
+    }
+
+    else if (x>=previousMaxW){
+
+      tft.fillRect(11, 201, 48, rectFillFunction('b', x,  levelMarks), ILI9341_BLACK);
+      tft.fillRect(11, 299, 48, rectFillFunction('g', x,  levelMarks) , ILI9341_GREEN);  
+      previousMaxW = x;
+    
+    }
+  
+
+
+    x = LS_1.maxAmplitudeT;
+
+    if (x<previousMaxT){
+      tft.fillRect(131, 201, 48, rectFillFunction('b', previousMaxT,  levelMarks), ILI9341_BLACK);
+      tft.fillRect(131, 299, 48, rectFillFunction('g', previousMaxT,  levelMarks) , ILI9341_GREEN);  
+      
+      previousMaxT = previousMaxT-(previousMaxT*0.5);
+     
+    }
+    else if (x>=previousMaxT){
+
+      tft.fillRect(131, 201, 48, rectFillFunction('b', x,  levelMarks), ILI9341_BLACK);
+      tft.fillRect(131, 299, 48, rectFillFunction('g', x,  levelMarks) , ILI9341_GREEN);  
+      previousMaxT = x;
+     
+
+    }
+    
+
+    
+   if (LS_1.maxAmplitudeW > 0.001 || LS_1.maxAmplitudeT > 0.001 ){
+  
+
+      tft.fillRect(1, 305, 250, 40, ILI9341_BLACK);
+      flag=1;
+      
+  
+   }
+
+   else if (flag==1){
+    
+
+ 
+   
+   tft.fillRect(1, 305, 250, 40, ILI9341_BLACK);  
+   
+   tft.setCursor(1, 305);  
+   tft.println(LS_1.maxAmplitudeW,4);
+   tft.setCursor(121, 305);  
+   tft.println(LS_1.maxAmplitudeT,4);
+   flag=0;
+   
+   }
+    tft.setCursor(1, 305);
+    tft.println(LS_1.maxAmplitudeW,4);
+  
+    
+    tft.setCursor(121, 305);
+    tft.println(LS_1.maxAmplitudeT,4);
+    
+   
+  
+}

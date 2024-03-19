@@ -1,0 +1,9 @@
+# Windows default autosave extension
+*.asv
+#  Mac save
+._*
+*.pdf
+folder_to_keep/*
+!folder_to_keep/.gitkeep
+*.txt
+!script_template.txt
