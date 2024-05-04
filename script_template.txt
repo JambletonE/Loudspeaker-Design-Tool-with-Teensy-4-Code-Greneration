@@ -2,7 +2,7 @@
 
 //Script generated: nan;
 //Script name: nan;
-
+#include <Arduino.h>
 #include <string.h>
 #include <cstdint>
 #include <Audio.h>
@@ -700,13 +700,15 @@ String gainPrintableT = String(LS_1.gainT) + "dB";
 
 int flag = 0;
 std::vector<float> levelMarks;
-
+unsigned long startMillis;
+const unsigned long interval = 1000; // 1 second
 
 void setup()
 {
  
   AudioMemory(40);
   Serial.begin(9600);
+startMillis = millis();
   // Enable audio shield
   sgtl5000_1.enable();
   sgtl5000_1.inputSelect(myInput);
@@ -725,8 +727,8 @@ void setup()
   tft.setTextSize(2); //  text size
   tft.setCursor(1, 1); // text cursor position
   tft.println(("Loaded: " + fileName).c_str());
-;
-  
+
+  tft.setCursor(1, 35); // text cursor position
  
   tft.println(" ");
   if (LS_1.CrossOverLength == 3){
@@ -771,14 +773,13 @@ void loop()
  
 
 
- 
-
+   unsigned long currentMillis = millis();
 
    
    tft.drawRect(10, 200, 50, 100, ILI9341_WHITE);//rectangles for driver amplitude meters
    tft.drawRect(130, 200, 50, 100, ILI9341_WHITE);
     
-   tft.setCursor(1, 78);  
+   tft.setCursor(1, 85);  
    tft.println("Woofer:");
    tft.setCursor(1, 102);  
    tft.println("Gain");
@@ -791,7 +792,7 @@ void loop()
 
    
 
-   tft.setCursor(121, 78); // text cursor position
+   tft.setCursor(121, 85); // text cursor position
    tft.println("Tweeter:");
    tft.setCursor(121, 102);  
    tft.println("Gain");
@@ -874,6 +875,22 @@ void loop()
     
     tft.setCursor(121, 305);
     tft.println(LS_1.maxAmplitudeT,4);
+
+    unsigned long taskTime = millis() - currentMillis;
+    
+    if (currentMillis - startMillis >= interval) {
+    
+	float cpuUsage = 100.0 * (float)taskTime / (float)(currentMillis - startMillis);
+    	//Calculate the percentage of time spent on filtering as CPU use indication
+    tft.fillRect(1, 30, 250, 14, ILI9341_BLACK); //Clear Last TFT Write
+    tft.setCursor(1, 30);
+    tft.print("CPU Usage: ");//Write CPU % use to TFT 
+    tft.print(cpuUsage);
+    tft.println("%");
+    
+    // Reset timer
+    startMillis = currentMillis;
+    }
     
    
   
