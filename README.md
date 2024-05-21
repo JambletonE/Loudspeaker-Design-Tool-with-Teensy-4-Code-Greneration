@@ -10,7 +10,7 @@ You can download a zip file here:
 
 ![zip](zip.png)
 
-Start by opening: a_LS_model.slx
+Unzip the file and open: a_LS_model.slx
 
 You will then be presented with:
 ![Screenshot](full_LS.png)
