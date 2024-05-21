@@ -6,12 +6,12 @@ This is a repository for a loudspeaker electroequivalent model, developed for pa
 In order to use the tool a working copy of MATLAB; with the Audio Toolbox, 
 Simscape, and Simulink add-ons, is required, in addition to an installed C compiler, such as MinGW. 
 
+Start by opening: a_LS_model.slx
+
 
 ![Signal chain](flow.png)
 
-Signal chaincan be seen above
-
-Open and run: a_LS_model.slx
+Signal chain can be seen above
 
 Users are able to enter Thiele and Small parameters and view modelled loudspeaker 
 frequency responses.
@@ -44,7 +44,7 @@ Box resonant modes can be entered and calculated through clicking on the above i
 Simulation output for frequency and time domain plots can be seen here.
 
 
-
+To run the model navigate to the Simulation tab and select 'run'.
 
 
 Various outputs of the tool can be seen below, some axis have been edited for readability:
