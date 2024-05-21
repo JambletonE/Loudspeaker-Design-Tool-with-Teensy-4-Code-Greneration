@@ -8,6 +8,10 @@ Simscape, and Simulink add-ons, is required, in addition to an installed C compi
 
 Start by opening: a_LS_model.slx
 
+![Signal chain](full_LS.png)
+
+You will then be presented with the above.
+
 
 ![Signal chain](flow.png)
 
