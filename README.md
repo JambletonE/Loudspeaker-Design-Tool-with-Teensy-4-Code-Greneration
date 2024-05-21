@@ -41,7 +41,7 @@ using the  that Arduino SDK. The Teensy then implements  filtering such as param
 
 Various outputs of the tool can be seen below, some axis have been edited for readability:
 
-![](output1.png)
+![](output9.png)
 
 ![](output2.png)
 
@@ -50,8 +50,8 @@ Various outputs of the tool can be seen below, some axis have been edited for re
 ![](output4.png)
 
 ![](output5.png)
-
+![](output1.png)
 ![](output6.png)
 
 ![](output7.png)
-
+![](output8.png)
