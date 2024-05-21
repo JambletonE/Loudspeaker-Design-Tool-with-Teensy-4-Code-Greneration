@@ -22,22 +22,30 @@ Enter Thiele-Small parameters, input signal duration, Parametric EQ controls, an
 
 
 
-The tool produces a .txt file, the contents of which can be uploaded to a Teensy 4.1 microcontroller. Produce plots can be automatically saved in a folder.
-
-![Box modes](modes.png)
-
-Box resonant modes can be entered and calculated here.
-
-![](freq.png)
-![Frequency and Time Domain](time.png)
-Simulation output for frequency and time domain plots can be seen here.
+The tool produces a .txt file, the contents of which can be uploaded to a Teensy 4.1 microcontroller. Produced plots can be automatically saved in a folder.
 
 ![Script save](script.png)
 
 Name both the save .txt and figure folder here.
 
-Box modes can be 
-using the  that Arduino SDK. The Teensy then implements  filtering such as parametric EQ and crossover.   ```
+
+Uploading of the generated script can be done using the Arduino SDK. The Teensy then implements  filtering such as parametric EQ and crossover, as well as dela, in real time. 
+
+More info on the Teensy and how to upload code can be found here:
+
+https://www.pjrc.com/teensy/index.html
+
+![Box modes](modes.png)
+
+Box resonant modes can be entered and calculated through clicking on the above icon.
+
+![](freq.png)
+![Frequency and Time Domain](time.png)
+Simulation output for frequency and time domain plots can be seen here.
+
+
+
+
 
 Various outputs of the tool can be seen below, some axis have been edited for readability:
 
