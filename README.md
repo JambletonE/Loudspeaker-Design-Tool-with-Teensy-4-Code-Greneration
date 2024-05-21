@@ -32,7 +32,7 @@ Box resonant modes can be entered and calculated here.
 ![Frequency and Time Domain](time.png)
 Simulation output for frequency and time domain plots can be seen here.
 
-![Script save](Teensy.png)
+![Script save](script.png)
 
 Name both the save .txt and figure folder here.
 
