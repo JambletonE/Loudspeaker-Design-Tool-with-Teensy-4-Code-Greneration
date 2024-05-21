@@ -18,7 +18,7 @@ frequency responses.
 
 ![Main Inputs](input.png)
 
-Enter Thiele-Small parameters, input signal duration, Parametric EQ controls, and Crossover parameters here. Go to these parameters to view various plots.
+Enter Thiele-Small parameters, input signal duration, parametric EQ controls, crossover parameters, and delay sttings are entered through the above icons. You can view various plots here as well.
 
 
 
@@ -29,7 +29,7 @@ The tool produces a .txt file, the contents of which can be uploaded to a Teensy
 Name both the save .txt and figure folder here.
 
 
-Uploading of the generated script can be done using the Arduino SDK. The Teensy then implements  filtering such as parametric EQ and crossover, as well as dela, in real time. 
+Uploading of the generated script can be done using the Arduino SDK. The Teensy then implements  filtering such as parametric EQ and crossover, as well as delay, in real time. 
 
 More info on the Teensy and how to upload code can be found here:
 
@@ -41,10 +41,10 @@ Box resonant modes can be entered and calculated through clicking on the above i
 
 ![](freq.png)
 ![Frequency and Time Domain](time.png)
-Simulation output for frequency and time domain plots can be seen here.
+Simulation output for frequency and time domain plots can be seen through the above.
 
 
-To run the model navigate to the Simulation tab and select 'run'.
+To run the simulation navigate to the Simulation tab and select 'run'.
 
 
 Various outputs of the tool can be seen below, some axis have been edited for readability:
