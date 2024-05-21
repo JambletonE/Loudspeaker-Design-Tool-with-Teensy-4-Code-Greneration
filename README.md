@@ -11,6 +11,10 @@ Open and run: a_LS_model.slx
 Users are able to enter Thiele and Small parameters and view modelled loudspeaker 
 frequency responses.
 
+![Main Inputs](input.png)
+
+Enter Thiele-Small parameters, input signal duration, Parametric EQ controls, and Crossover parameters here.
+
 The tool produces a .txt file, the contents of which can be uploaded to a Teensy 4.1 microcontroller, 
 using the  that Arduino SDK. The Teensy then implements  filtering such as parametric EQ and crossover.   ```
 
