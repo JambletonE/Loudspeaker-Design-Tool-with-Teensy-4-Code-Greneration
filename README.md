@@ -6,6 +6,10 @@ This is a repository for a loudspeaker electroequivalent model, developed for pa
 In order to use the tool a working copy of MATLAB; with the Audio Toolbox, 
 Simscape, and Simulink add-ons, is required, in addition to an installed C compiler, such as MinGW. 
 
+You can download a zip file here:
+
+![zip](zip.png)
+
 Start by opening: a_LS_model.slx
 
 You will then be presented with:
