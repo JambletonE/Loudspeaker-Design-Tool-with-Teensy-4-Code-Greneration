@@ -35,7 +35,7 @@ More info on the Teensy and how to upload code can be found here:
 
 https://www.pjrc.com/teensy/index.html
 
-![Box modes](modes.png)
+![Box modes](modesRme.png)
 
 Box resonant modes can be entered and calculated through clicking on the above icon.
 
