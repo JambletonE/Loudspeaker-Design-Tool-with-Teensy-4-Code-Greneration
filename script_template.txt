@@ -1,4 +1,4 @@
-// Functions and definitions for model DSP have been kept in one script to facilitate copy and paste functionality of corresponding Simulink function rather than having seperate .cpp and .h files.
+// Functions and definitions for model DSP have been kept in one script to facilitate copy and paste functionality of corresponding Simulink function rather than having separate .cpp and .h files.
 
 //Script generated: nan;
 //Script name: nan;
@@ -47,7 +47,7 @@ class  LoudspeakerModelDSP : public AudioStream
 
     static float zi_P[6][2];
 
-    static float zi_lo[2][4]; //Shi..
+    static float zi_lo[2][4]; //
     static float zi_hi[2][4];
 
     static float zi_low_all[2];
@@ -112,7 +112,7 @@ std::vector<float> LoudspeakerModelDSP::delayBufferW(128 - wSamples);
 
 float LoudspeakerModelDSP::gainT = nan;//nans!!!!!!!!!!!!!!!!!
 float LoudspeakerModelDSP::gainW = nan;//nans!!!!!!!!!
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////7
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
@@ -278,7 +278,7 @@ float a0_Hi = nan, a1_Hi = nan , b0_Hi = nan , b1_Hi = nan;
     {b0_6, b1_6, b2_6}
   };
   
-LoudspeakerModelDSP::CrossOverLength = B_Lo_Length ;//MAKE SURE TO PUT IN SCRIPT
+LoudspeakerModelDSP::CrossOverLength = B_Lo_Length ;
 
 float Lo_A[5];
 float Lo_B[5];
@@ -388,7 +388,7 @@ float Hi_B[5];
   }
 
 
-//Low pass everthing at 20KHz
+//Low pass everything at 20KHz
 
   float B_LowPassAll[3] = {0.813243918762578066328217119008, 1.626487837525156132656434238015, 0.813243918762578066328217119008};
   float A_LowPassAll[3] = {1, 1.591300465864908364466145940241, 0.661675209185403678802117610758};
@@ -398,7 +398,7 @@ float Hi_B[5];
 
 
 
-//High pass everthing at 20KHz
+//High pass everything at 20KHz
   float B_highPassAll[3] = {0.997987115675118996449555197614, -1.995974231350237992899110395228, 0.997987115675118996449555197614};
   float A_highPassAll[3] = {1, -1.995970179642828412625021883287, 0.995978283057647240106291519623};
 
@@ -452,8 +452,8 @@ float gainWdB=pow(10, gainW / 20);
   }
     if (B_Lo_Length==2){
       
-      vectorCopy(y_lo, x_lo,true); //inverse low signal if 2nd order linkwitz riley being used
-      vectorCopy(x_lo, y_lo, false); //copy inverted signal back
+      vectorCopy(y_lo, x_lo,true); //inverse low signal if 2nd order linkwitz-riley being used
+      vectorCopy(x_lo, y_lo, false); //copy inverted signal back for filtering
       
       }
       
