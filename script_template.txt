@@ -1,5 +1,5 @@
 // Functions and definitions for model DSP have been kept in one script to facilitate copy and paste functionality of corresponding Simulink function rather than having separate .cpp and .h files.
-
+// All "nan"s will be replaced by the Matlab script, not necessarily with numbers 
 //Script generated: nan;
 //Script name: nan;
 #include <Arduino.h>
