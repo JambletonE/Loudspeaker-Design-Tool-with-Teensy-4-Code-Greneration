@@ -16,8 +16,15 @@ You will then be presented with:
 ![Screenshot](full_LS.png)
 
 
+Underlying code is mainly located in three places. 
+Within a subsystem; such as crossover, parametric E, etc, (right click on mask --> look under mask),
+Within a subsystem's mask,  (right click on mask --> edit mask),
+Within a callback (click on the modelling tab--> model explorer-->callbacks)
 
-Signal chain for both simulation and microcontroller is:
+
+
+
+The signal chain for both simulation and microcontroller is:
 ![Signal chain](flow.png)
 
 
