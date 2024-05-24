@@ -88,3 +88,7 @@ Various outputs of the tool can be seen below, some axis have been edited for re
 
 ![](output7.png)
 ![](output8.png)
+
+
+\\
+![](copyright.png)
