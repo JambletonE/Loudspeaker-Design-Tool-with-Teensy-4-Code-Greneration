@@ -32,7 +32,7 @@ The signal chain for both simulation and microcontroller is:
 Users are able to enter Thiele and Small parameters and view modelled loudspeaker 
 frequency responses.
 
-Enter Thiele-Small parameters, input signal duration, parametric EQ controls, crossover parameters, and delay sttings are entered through the above icons, and view plots here:
+Enter Thiele-Small parameters, input signal duration, parametric EQ controls, crossover parameters, and delay sttings through the  icons/masks below, view plots here also:
 
 ![Main Inputs](input.png)
 
